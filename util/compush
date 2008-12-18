@@ -1,0 +1,17 @@
+#!/bin/bash -ex
+
+MSG="update"
+if [ "$1" = "-m" ] ; then
+    MSG="$2"
+    shift
+    shift
+fi
+
+FLAGS=""
+if [ "$#" = 0 ] ; then
+    FLAGS="-a"
+fi
+
+git commit $FLAGS -m "$MSG" "$@"
+git push origin master
+
