@@ -57,6 +57,7 @@
 
     <item>
       <title>This one has it all!</title>
+        <description>This can haz be imported as a comment to go with the confusing mix of media.</description>
         <media:group>
             <media:title>The title is visible as a tooltip</media:title>
             <media:thumbnail url="http://i.friendfeed.com/8ee7d184c40e25b493362e5ecdb0aa62c334ed39" width="135" height="117"/>
