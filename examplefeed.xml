@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:georss="http://www.georss.org/georss" xmlns:media="http://search.yahoo.com/mrss"  xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+  <channel>
+    <title>Example feed to demo media-rss, georss, and enclosures in FriendFeed</title>
+    <link>http://paulbuchheit.github.com/examplefeed.xml</link>
+    <atom:link type="application/json" href="http://friendfeed.com/api/public-sup.json#103752afe1" rel="http://api.friendfeed.com/2008/03#sup"/>
+
+    <item>
+        <title>This one has multiple pictures</title>
+        <description>This can be imported as a comment</description>
+        <link>http://www.viprasys.com/vb/f21/filipino-obama-look-alike-139588/</link>
+        <media:group>
+            <media:content url="http://i36.tinypic.com/257q3oh.jpg" type="image/jpeg" width="604" height="453"/>
+            <media:thumbnail url="http://i.friendfeed.com/0fd6b32cd0d5686e31e37db15d1b13eb1e36208a" width="233" height="175"/>
+        </media:group>
+        <media:group>
+            <media:content url="http://i36.tinypic.com/2uh1w1x.jpg" type="image/jpeg" width="604" height="402"/>
+            <media:thumbnail url="http://i.friendfeed.com/f74669837a2abc9c87766d6ecc4570bdb22370af" width="263" height="175"/>
+        </media:group>
+        <media:group>
+            <media:content url="http://i35.tinypic.com/24livl3.jpg" type="image/jpeg" width="600" height="400"/>
+            <media:thumbnail url="http://i.friendfeed.com/8997e89653be83bfb1ae40e46c80a2425e326416" width="263" height="175"/>
+        </media:group>
+    </item>
+
+    <item>
+      <title>This one has a map</title>
+      <georss:point>37.778279 -122.396858</georss:point>
+      <link>http://maps.google.com/</link>
+    </item>
+
+    <item>
+      <title>This one has videos</title>
+        <media:group>
+            <media:title>[iPhone] Beautiful Day</media:title>
+            <media:description>12Seconds video from user sol</media:description>
+            <media:thumbnail url="http://imgcache.12seconds.tv/clip_thumb/ip9-1229627685.jpg" width="124" height="100" />
+            <media:content url="http://clips.12seconds.tv/files/clips/ip9-1229627685.flv" type="video/x-flv" medium="video"/>
+            <media:content url="http://clips.12seconds.tv/files/clips/mp4/ip9-1229627685.mp4" type="video/x-mp4" medium="video"/>
+        </media:group>
+        <media:group>
+            <media:title>checking out posting</media:title>
+            <media:thumbnail url="http://imgcache.12seconds.tv/clip_thumb/record_1229617204067_WoYLR.jpg" width="124" height="100" />
+            <media:content url="http://clips.12seconds.tv/files/clips/record_1229617204067_WoYLR.flv" type="video/x-flv" medium="video"/>
+            <media:content url="http://clips.12seconds.tv/files/clips/mp4/record_1229617204067_WoYLR.mp4" type="video/x-mp4" medium="video"/>
+        </media:group>
+
+
+      <link>http://12seconds.tv/</link>
+    </item>
+
+    <item>
+      <title>This one has audio</title>
+      <enclosure url="http://www.ffundercats.com/podpress_trac/feed/423/0/2008-12-16T15_41_00-08_00.mp3" length="21681050" type="audio/mpeg" />
+      <link>http://ffundercats.com/</link>
+    </item>
+
+    <item>
+      <title>This one has it all!</title>
+        <media:group>
+            <media:title>The title is visible as a tooltip</media:title>
+            <media:thumbnail url="http://i.friendfeed.com/8ee7d184c40e25b493362e5ecdb0aa62c334ed39" width="135" height="117"/>
+        </media:group>
+        <media:group>
+            <media:title>[iPhone] Beautiful Day</media:title>
+            <media:description>12Seconds video from user sol</media:description>
+            <media:thumbnail url="http://imgcache.12seconds.tv/clip_thumb/ip9-1229627685.jpg" width="124" height="100" />
+            <media:content url="http://clips.12seconds.tv/files/clips/ip9-1229627685.flv" type="video/x-flv" medium="video"/>
+            <media:content url="http://clips.12seconds.tv/files/clips/mp4/ip9-1229627685.mp4" type="video/x-mp4" medium="video"/>
+        </media:group>
+      <enclosure url="http://www.ffundercats.com/podpress_trac/feed/423/0/2008-12-16T15_41_00-08_00.mp3" length="21681050" type="audio/mpeg" />
+      <georss:point>37.778279 -122.396858</georss:point>
+      <link>http://friendfeed.com/</link>
+    </item>
+
+
+  </channel>
+</rss>
+
