@@ -8,6 +8,7 @@
     <item>
         <title>This one has multiple pictures</title>
         <description>This can be imported as a comment</description>
+        <pubDate>Fri, 19 Dec 2008 00:44:25 +0000</pubDate>
         <link>http://www.viprasys.com/vb/f21/filipino-obama-look-alike-139588/</link>
         <guid>http://www.viprasys.com/vb/f21/filipino-obama-look-alike-139588/</guid>
         <media:group>
@@ -25,16 +26,18 @@
     </item>
 
     <item>
-      <title>This one has a map</title>
-      <georss:point>37.778279 -122.396858</georss:point>
-      <link>http://maps.google.com/</link>
-      <guid>http://maps.google.com/</guid>
+        <title>This one has a map</title>
+        <pubDate>Thr, 18 Dec 2008 00:44:25 +0000</pubDate>
+        <georss:point>37.778279 -122.396858</georss:point>
+        <link>http://maps.google.com/</link>
+        <guid>http://maps.google.com/</guid>
     </item>
 
     <item>
-      <title>This one has videos</title>
-      <link>http://12seconds.tv/</link>
-      <guid>http://12seconds.tv/</guid>
+        <title>This one has videos</title>
+        <link>http://12seconds.tv/</link>
+        <pubDate>Wed, 17 Dec 2008 00:44:25 +0000</pubDate>
+        <guid>http://12seconds.tv/</guid>
         <media:group>
             <media:title>[iPhone] Beautiful Day</media:title>
             <media:description>12Seconds video from user sol</media:description>
@@ -48,21 +51,21 @@
             <media:content url="http://clips.12seconds.tv/files/clips/record_1229617204067_WoYLR.flv" type="video/x-flv" medium="video"/>
             <media:content url="http://clips.12seconds.tv/files/clips/mp4/record_1229617204067_WoYLR.mp4" type="video/x-mp4" medium="video"/>
         </media:group>
-
-
     </item>
 
     <item>
-      <title>This one has audio</title>
-      <link>http://ffundercats.com/</link>
-      <guid>http://ffundercats.com/</guid>
-      <enclosure url="http://www.ffundercats.com/podpress_trac/feed/423/0/2008-12-16T15_41_00-08_00.mp3" length="21681050" type="audio/mpeg" />
+        <title>This one has audio</title>
+        <link>http://ffundercats.com/</link>
+        <guid>http://ffundercats.com/</guid>
+        <pubDate>Tue, 16 Dec 2008 00:44:25 +0000</pubDate>
+        <enclosure url="http://www.ffundercats.com/podpress_trac/feed/423/0/2008-12-16T15_41_00-08_00.mp3" length="21681050" type="audio/mpeg" />
     </item>
 
     <item>
-      <title>This one has it all!</title>
+        <title>This one has it all!</title>
         <link>http://friendfeed.com/</link>
         <guid>http://friendfeed.com/</guid>
+        <pubDate>Mon, 16 Dec 2008 00:44:25 +0000</pubDate>
         <description>This can haz be imported as a comment to go with the confusing mix of media.</description>
         <media:group>
             <media:title>The title is visible as a tooltip</media:title>
@@ -75,8 +78,8 @@
             <media:content url="http://clips.12seconds.tv/files/clips/ip9-1229627685.flv" type="video/x-flv" medium="video"/>
             <media:content url="http://clips.12seconds.tv/files/clips/mp4/ip9-1229627685.mp4" type="video/x-mp4" medium="video"/>
         </media:group>
-      <enclosure url="http://www.ffundercats.com/podpress_trac/feed/423/0/2008-12-16T15_41_00-08_00.mp3" length="21681050" type="audio/mpeg" />
-      <georss:point>37.778279 -122.396858</georss:point>
+        <enclosure url="http://www.ffundercats.com/podpress_trac/feed/423/0/2008-12-16T15_41_00-08_00.mp3" length="21681050" type="audio/mpeg" />
+        <georss:point>37.778279 -122.396858</georss:point>
     </item>
 
 
