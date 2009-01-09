@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
+    <title>Feed</title>
+    <style type="text/css">
+        html, body {
+            height: auto; 
+            background: #000;
+        }
+        body, input, textarea, td, select, option {
+          color: black;
+          font-family: Arial, sans-serif;
+          font-size: 11pt;
+        }
+
+        a, a:visited {
+          color: #0000cc;
+          text-decoration: none;
+        }
+
+        a:hover {
+          text-decoration: underline;
+        }
+
+        td {
+            vertical-align: top;
+        }
+
+        #logodiv {
+            background: #fff;
+            margin: 0.5em auto 0.5em auto;
+            width:41em;
+            padding:0.6em 2em 0.6em 2em;
+            -moz-border-radius:10px;
+            -webkit-border-radius:10px;
+        }
+        #main {
+            background: #888;
+            background: #fff;
+            margin: 0em auto 0px auto;
+            width:41em;
+            -moz-border-radius:10px;
+            -webkit-border-radius:10px;
+            padding:2em;
+            padding-top:0.5em;
+        }
+
+        .profile {
+            font-size: 14pt;
+            padding: 0.7em;
+            margin-top:1em;
+            margin-bottom:0.5em;
+            background: rgb(192,215,243);
+            -moz-border-radius:7px;
+            -webkit-border-radius:7px;
+        }
+        .profile td {
+            font-size: 15pt;
+        }
+        .profile a {
+            font-size: 11pt;
+        }
+        .profile .userpic {
+            margin-right: 10px;
+        }
+
+        .message {
+            position: relative;
+            padding:9px 5px 9px 5px;
+            background: white;
+            width: 40em;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .message .userpic {
+            border: 1px solid #eee;
+            margin-right: 10px;
+            margin-top:4px;
+        }
+        .message .nickname {
+            font-weight: bold;
+        }
+        .message .date {
+            color: #aaa;
+            font-size:9pt;
+            margin-left:0.5em;
+            font-style: italic;
+        }
+
+        .message .content {
+            width: 100%;
+            font-size:12pt;
+        }
+        .message .comlike {
+            margin-top: 0.5em;
+        }
+        .message .icon {
+            float:right;
+            padding-left:10px;
+        }
+        .message .media {
+            margin-top: 8px;
+        }
+        .message .media img {
+          border: 1px solid #ccc;
+          padding: 1px;
+        }
+
+        .submsgs {
+            padding-left: 2em;
+        }
+        .submsgs .message {
+            margin-top:0em;
+            width: 38em;
+        }
+        .submsgs .message .userpic {
+            margin-left: -4px;
+        }
+
+        #msgmenu {
+            position:absolute;
+            top: -1px;
+            right: -9em;
+            background: #fff;
+            padding:10px;
+            -moz-border-radius:5px;
+            -webkit-border-radius:5px;
+            z-index: 100;
+            line-height: 1.5em;
+            border: 1px solid #ccc;
+        }
+    </style>
+  </head>
+  <body>
+  <div id="logodiv"><img src="http://friendfeed.com/static/images/logo.png"/></div>
+  <div id="main"></div>
+  <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+  <script type="text/javascript">
+  //<![CDATA[
+
+//$.fn.center = function() { }
+
+// Using a function is faster than 4 regexs when there are few matches
+var htmlCharMap = {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'};
+function htmlCharEsc(c) { return htmlCharMap[c]; }  // don't create a closure, and don't keep recreating htmlCharMap
+function htmlEscape(s) { return String(s).replace(/[&<>\"]/g, htmlCharEsc); }
+
+function make_short_link(url) {
+    var max_len = 30
+    var href = url
+    if (url.length > max_len) {
+        url = url.substring(0, max_len);
+        var amp = url.lastIndexOf('&');
+        // avoid splitting html char entities
+        if (amp > max_len - 5)
+            url = url.substring(0, amp);
+        url += "...";
+    }
+    return '<a href="' + href + '" title="' + href + '">' + url + '</a>';
+}
+
+function linkify(text) {
+    var html = htmlEscape(text);
+    return html.replace(/(https?:\/\/(?:[^\s&]|&amp;)+[^\s\.,\!)?>\]:;'"&])/g, make_short_link);
+}
+
+function parse_date(d) {
+    // e.g. 2009-01-08T23:59:02Z
+    d = d.split(/[T:Z-]/g);
+    return new Date(Date.UTC(d[0], d[1] - 1, d[2], d[3], d[4], d[5]));
+}
+    
+
+function make_messages(who, entries, subs) {
+    var submap = {}
+    for (var i in subs) {
+        var s = subs[i];
+        submap[s.id] = s;
+    }
+
+    var r = []
+    for (var i in entries) {
+        var estart = r.length;
+        var e = entries[i];
+        e.date = e.updated;
+        e.type = "e";
+        e.entry = e;
+        r.push(e)
+        for (var x in e.comments) {
+            var c = e.comments[x];
+            c.type = "c";
+            c.entry = e;
+            r.push(c)
+        }
+        for (var x in e.likes) {
+            var l = e.likes[x];
+            l.type = "l";
+            l.entry = e;
+            r.push(l)
+        }
+        var active = e.user.nickname == who;
+        for (var x = estart; x < r.length; x++) {
+            var m = r[x];
+            m.active = active;
+            m.user.is_friend = !!submap[m.user.id];
+        }
+    }
+
+    var good = []
+    for (var i in r) {
+        var m = r[i];
+        if (m.type == 'l') continue;  // not for now
+        if (m.active || m.room || m.user.is_friend) good.push(m);
+    }
+    return good;
+}
+
+function sort_messages(msgs) {
+    function cmp(a, b) {
+        // put entries after comments of the same time
+        return (a.date > b.date) ? -1 : (a.date < b.date) ? 1 : (a.type.charCodeAt(0) - b.type.charCodeAt(0));
+    }
+    msgs.sort(cmp);
+}
+
+function use_link(m) {
+    if (m.type != 'e') return false;
+    var s = m.service.id;
+    if (s == "twitter") return false;
+    if (s == "internal" && m.service.entryType == "message") return false;
+    return true;
+}
+
+function media_html(m) {
+    if (!m.media || !m.media.length) return '';
+    var imgs = '';
+    var tw = 0;
+    for (var i in m.media) {
+        var media = m.media[i];
+        if (!media.thumbnails || !media.thumbnails.length) continue;
+        for (var x in media.thumbnails) {
+            var t = media.thumbnails[x];
+            if (!t.width || !t.height) continue;
+            if (t.width > 525 || t.height > 175) continue;
+            tw += t.width;
+            if (tw > 500) break;
+            var img = '<img src="' + htmlEscape(t.url) + '" width="' + t.width + '" height="' + t.height + '"/>';
+            if (media.link) img = '<a href="' + htmlEscape(media.link) + '">' + img + '</a>';
+            imgs += img;
+            break;
+        }
+    }
+    if (!imgs) return '';
+    return '<div class="media">' + imgs + '</div>';
+}
+            
+function entry_url(m) { return "http://friendfeed.com/e/" + m.entry.id; }
+
+function time_html(date) {
+    date = parse_date(date);
+    var delta = ((new Date()) - date) / 1000;
+    delta /= 60;
+    if (delta < 60) return Math.round(delta) + " minutes ago";
+    delta /= 60;
+    if (delta < 24) return Math.round(delta) + " hours ago";
+    delta /= 24;
+    return Math.round(delta) + " days ago";
+}
+
+function msg_html(m, is_main) {
+    var html = [];
+
+    var iconurl = m.type == 'e' ? m.service.iconUrl : 
+        ("http://friendfeed.com/static/images/comment-" + (m.user.is_friend ? "friend" : "lighter") + ".png?v=2");
+
+    html.push('<div class="message" eurl="' + entry_url(m) + '"><table><tr><td>')
+    if (m.room) {
+        html.push(
+            '<img class="userpic" src="http://friendfeed.com/rooms/' + m.room.nickname + 
+                '/picture?size=' + (is_main ? "medium" : "small") + '"/></td>' +
+            '<td class="content">' +
+            '<img class="icon" src="' + iconurl + '"/> ' +
+            '<a href="http://friendfeed.com/rooms/' + m.room.nickname + '" class="nickname">' + htmlEscape(m.room.name) + '</a>');
+
+        if (!m.anonymous) {
+            html.push(': <a href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
+        }
+    } else {
+        html.push(
+            '<img class="userpic" src="http://friendfeed.com/users/' + m.user.nickname + 
+                '/picture?size=' + (is_main ? "medium" : "small") + '"/></td>' +
+            '<td class="content">' +
+            '<img class="icon" src="' + iconurl + '"/> ' +
+            '<a href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
+    }
+
+    if (m.type == "c") html.push(linkify(m.body));
+    else if (m.type == "l") html.push("Liked " + htmlEscape(m.entry.title));
+    else html.push(linkify(m.title));
+    if (use_link(m)) html.push(' ' + make_short_link(m.link));
+    html.push(' <span class="date">' + time_html(m.date) + '</span></div>');
+    html.push(media_html(m));
+    if (m.type == 'e' && (m.comments.length || m.likes.length)) {
+        html.push('<div class="comlike">');
+        if (m.comments.length)
+            html.push('<img src="http://friendfeed.com/static/images/comment-lighter.png"/> <a href="' +
+                entry_url(m) + '">' + m.comments.length + (m.comments.length == 1 ? ' comment' : ' comments') + '</a> ');
+        if (m.likes.length)
+            html.push('<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> <a href="' +
+                entry_url(m) + '">' + m.likes.length + (m.likes.length == 1 ? ' like' : ' likes') + ' </a> ');
+        html.push('</div>');
+    }
+ 
+    html.push('</td></tr></table></div>')
+    return html.join('');
+}
+
+function show_feed(cur_user) {
+    var profile_data = cur_user.profile_data;
+    var msgs = make_messages(profile_data.nickname, cur_user.feed_data.entries, cur_user.profile_data.subscriptions);
+    sort_messages(msgs);
+    msgs = msgs.slice(0, 70)
+
+    var dmsgs = []
+    var dmap = {}
+    for (var i in msgs) {
+        var m = msgs[i];
+        var dlist = dmap[m.entry.id];
+        if (!dlist) {
+            dlist = [];
+            dmap[m.entry.id] = dlist;
+            dmsgs.push(dlist);
+        }
+        dlist.push(m);
+    }
+
+    var html = [];
+
+    html.push('<div class="profile"><table><tr><td style="line-height:0px"><img class="userpic" src="http://friendfeed.com/' +
+         profile_data.nickname + 
+        '/picture?size=large"/></td><td style="width:100%">' + profile_data.nickname + ' (' + htmlEscape(profile_data.name) + 
+        ') + friends  <br/><a href="http://friendfeed.com/' + 
+        profile_data.nickname + '">View ' + profile_data.nickname + ' on FriendFeed</a></td></tr></table></div>');
+
+    for (var i in dmsgs) {
+        var dlist = dmsgs[i];
+        html.push(msg_html(dlist[0], true));
+        if (dlist.length < 2) continue;
+        html.push('<div class="submsgs">');
+        for (var x = 1; x < dlist.length; x++)
+            html.push(msg_html(dlist[x]));
+        var last = dlist[dlist.length-1];
+        if (last.type != 'e')
+            html.push(msg_html(last.entry))
+
+        html.push('</div>');
+    }
+
+    $("#main").html(html.join(''))
+
+    $(".message").mouseover(function (e) {
+        if ($(this).find("#msgmenu").length) return;
+        $('#msgmenu').remove();
+        var eurl = $(this).attr("eurl");
+        var comurl = eurl + '/comment?comment=' + eurl.split('/')[4];
+        $(this).append('<div id="msgmenu">' +
+            '<a href="' + eurl + '">View on FriendFeed</a><br/>' +
+            '<img src="http://friendfeed.com/static/images/comment-lighter.png"/> ' +
+            '<a href="' + comurl + '">Comment</a><br/>' +
+            '<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> ' +
+            '<a href="' + eurl + '">Like</a> ' +
+            '</div>');
+    }).mouseout(function (e) {
+        if ($(e.relatedTarget).parents(".message").length) return;
+        $('#msgmenu').addClass("dead");
+        setTimeout(function() {
+            $('.dead#msgmenu').remove(); 
+        }, 400);
+    });
+}
+
+function load_user(nickname) {
+    $("#main").html("Loading...");
+    var cur_user = {nickname: nickname};
+    function check_loaded() {
+        if (cur_user.profile_data && cur_user.feed_data)
+            show_feed(cur_user);
+    }
+    $.getJSON("http://friendfeed.com/api/user/" + nickname + "/profile?callback=?", function(data) {
+        cur_user.profile_data = data;
+        check_loaded();
+    });
+    $.getJSON("http://friendfeed.com/api/feed/user/" + nickname + "/friends?callback=?", function(data) {
+        cur_user.feed_data = data;
+        check_loaded();
+    });
+}
+        
+    
+$(function() {
+    var cur_nick = '';
+    setInterval(function() {
+        var nick = (document.location + '#').split('#')[1] || 'paul';
+        if (cur_nick == nick) return;
+        cur_nick = nick;
+        load_user(nick);
+    }, 200);
+});
+
+  //]]>
+  </script>
+  </body>
+</html>
