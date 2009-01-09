@@ -284,7 +284,7 @@ function msg_html(m, is_main) {
                 '/picture?size=' + (is_main ? "medium" : "small") + '"/></td>' +
             '<td class="content">' +
             '<img class="icon" src="' + iconurl + '"/> ' +
-            '<a href="http://friendfeed.com/rooms/' + m.room.nickname + '" class="nickname">' + htmlEscape(m.room.name) + '</a>');
+            '<a href="http://friendfeed.com/rooms/' + m.room.nickname + '" class="nickname">' + htmlEscape(m.room.name) + '</a> ');
 
         if (!m.anonymous) {
             html.push(': <a href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
