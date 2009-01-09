@@ -190,6 +190,10 @@ function make_messages(who, entries, subs) {
             var c = e.comments[x];
             c.type = "c";
             c.entry = e;
+            if (x == 0 && c.user.id == e.user.id) {
+                e.attached_comment = c;
+                continue;
+            }
             r.push(c)
         }
         for (var x in e.likes) {
@@ -209,7 +213,7 @@ function make_messages(who, entries, subs) {
     var good = []
     for (var i in r) {
         var m = r[i];
-        if (m.type == 'l') continue;  // not for now
+        if (m.type == 'l' || !m.user.nickname) continue;  // not for now
         if (m.active || m.room || m.user.is_friend) good.push(m);
     }
     return good;
@@ -296,8 +300,16 @@ function msg_html(m, is_main) {
 
     if (m.type == "c") html.push(linkify(m.body));
     else if (m.type == "l") html.push("Liked " + htmlEscape(m.entry.title));
-    else html.push(linkify(m.title));
-    if (use_link(m)) html.push(' ' + make_short_link(m.link));
+    else {
+        if (use_link(m)) {
+            if (m.attached_comment) html.push(linkify(m.attached_comment.body) + " - ");
+            html.push(linkify(m.title) + ' ' + make_short_link(m.link));
+        } else {
+            html.push(linkify(m.title));
+            if (m.attached_comment) html.push(' ' + linkify(m.attached_comment.body));
+        }
+    }
+
     html.push(' <span class="date">' + time_html(m.date) + '</span></div>');
     html.push(media_html(m));
     if (m.type == 'e' && (m.comments.length || m.likes.length)) {
