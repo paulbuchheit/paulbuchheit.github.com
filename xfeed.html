@@ -186,14 +186,16 @@ function make_messages(who, entries, subs) {
         e.type = "e";
         e.entry = e;
         r.push(e)
+
+        if (e.comments.length && e.comments[0].user.id == e.user.id) {
+            e.attached_comment = e.comments[0];
+            e.comments = e.comments.slice(1);
+        }
+
         for (var x in e.comments) {
             var c = e.comments[x];
             c.type = "c";
             c.entry = e;
-            if (x == 0 && c.user.id == e.user.id) {
-                e.attached_comment = c;
-                continue;
-            }
             r.push(c)
         }
         for (var x in e.likes) {
