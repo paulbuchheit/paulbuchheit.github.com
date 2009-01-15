@@ -109,6 +109,7 @@
         .message .icon {
             float:right;
             padding-left:10px;
+            border-width: 0px;
         }
         .message .media {
             margin-top: 8px;
@@ -132,7 +133,7 @@
         #msgmenu {
             position:absolute;
             top: -1px;
-            right: -9em;
+            left: 40em;
             background: #fff;
             padding:10px;
             -moz-border-radius:5px;
@@ -141,12 +142,17 @@
             line-height: 1.5em;
             border: 1px solid #ccc;
         }
+        #msgmenu a {
+            white-space: nowrap;
+        }
+
     </style>
   </head>
   <body>
   <div id="logodiv"><img src="http://friendfeed.com/static/images/logo.png"/></div>
-  <div id="main"></div>
+  <div id="main">Loading...</div>
   <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.2.6/jquery.min.js"></script>
+  <script type="text/javascript" src="debug.js"></script>
   <script type="text/javascript">
   //<![CDATA[
 
@@ -278,10 +284,11 @@ function entry_url(m) { return "http://friendfeed.com/e/" + m.entry.id; }
 function time_html(date) {
     date = parse_date(date);
     var delta = ((new Date()) - date) / 1000;
+    if (delta < 90) return Math.round(delta) + " seconds ago";
     delta /= 60;
-    if (delta < 60) return Math.round(delta) + " minutes ago";
+    if (delta < 90) return Math.round(delta) + " minutes ago";
     delta /= 60;
-    if (delta < 24) return Math.round(delta) + " hours ago";
+    if (delta < 48) return Math.round(delta) + " hours ago";
     delta /= 24;
     return Math.round(delta) + " days ago";
 }
@@ -289,16 +296,16 @@ function time_html(date) {
 function msg_html(m, is_main) {
     var html = [];
 
-    var iconurl = m.type == 'e' ? m.service.iconUrl : 
-        ("http://friendfeed.com/static/images/comment-" + (m.user.is_friend ? "friend" : "lighter") + ".png?v=2");
+    var icon = m.type == 'e' ? 
+        ('<a href="' + m.service.profileUrl + '"><img class="icon" src="' + m.service.iconUrl + '"/></a>') : 
+        ('<img class="icon" src="http://friendfeed.com/static/images/comment-' + (m.user.is_friend ? 'friend' : 'lighter') + '.png?v=2"/>');
 
     html.push('<div class="message" eurl="' + entry_url(m) + '"><table><tr><td>')
     if (m.room) {
         html.push(
             '<img class="userpic" src="http://friendfeed.com/rooms/' + m.room.nickname + 
                 '/picture?size=' + (is_main ? "medium" : "small") + '"/></td>' +
-            '<td class="content">' +
-            '<img class="icon" src="' + iconurl + '"/> ' +
+            '<td class="content">' + icon +
             '<a href="http://friendfeed.com/rooms/' + m.room.nickname + '" class="nickname">' + htmlEscape(m.room.name) + '</a> ');
 
         if (!m.anonymous) {
@@ -308,8 +315,7 @@ function msg_html(m, is_main) {
         html.push(
             '<img class="userpic" src="http://friendfeed.com/users/' + m.user.nickname + 
                 '/picture?size=' + (is_main ? "medium" : "small") + '"/></td>' +
-            '<td class="content">' +
-            '<img class="icon" src="' + iconurl + '"/> ' +
+            '<td class="content">' + icon +
             '<a target="_self" href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
     }
 
@@ -397,12 +403,11 @@ function show_feed(cur_user) {
             '<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> ' +
             '<a href="' + eurl + '">Like</a> ' +
             '</div>');
-    }).mouseout(function (e) {
-        if ($(e.relatedTarget).parents(".message").length) return;
-        $('#msgmenu').addClass("dead");
-        setTimeout(function() {
-            $('.dead#msgmenu').remove(); 
-        }, 400);
+        $('#msgmenu').css('left', this.offsetWidth-2);
+    });
+    $('body').mouseover(function (e) {
+        if (!$(e.target).parents().andSelf().is(".message"))
+            $('#msgmenu').remove();
     });
 }
 
