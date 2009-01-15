@@ -169,7 +169,7 @@ function htmlEscape(s) { return String(s).replace(/[&<>\"]/g, htmlCharEsc); }
 
 if (!String.prototype.endsWith)
     String.prototype.endsWith = function(s) { return this.indexOf(s, this.length - s.length) != -1; }
-if (!String.prototype.startssWith)
+if (!String.prototype.startsWith)
     String.prototype.startsWith = function(s) { return this.lastIndexOf(s, 0) != -1; }
 
 function template(t) {
