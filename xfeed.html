@@ -64,6 +64,8 @@
         }
         .profile .userpic {
             margin-right: 10px;
+            width: 75px;
+            height: 75px;
         }
 
         .message {
@@ -77,6 +79,8 @@
             border: 1px solid #eee;
             margin-right: 10px;
             margin-top:4px;
+            width: 50px;
+            height: 50px;
         }
         .message .nickname {
             font-weight: bold;
@@ -128,6 +132,8 @@
         }
         .submsgs .message .userpic {
             margin-left: -4px;
+            width: 25px;
+            height: 25px;
         }
 
         #msgmenu {
@@ -156,12 +162,36 @@
   <script type="text/javascript">
   //<![CDATA[
 
-//$.fn.center = function() { }
-
 // Using a function is faster than 4 regexs when there are few matches
 var htmlCharMap = {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'};
 function htmlCharEsc(c) { return htmlCharMap[c]; }  // don't create a closure, and don't keep recreating htmlCharMap
 function htmlEscape(s) { return String(s).replace(/[&<>\"]/g, htmlCharEsc); }
+
+if (!String.prototype.endsWith)
+    String.prototype.endsWith = function(s) { return this.indexOf(s, this.length - s.length) != -1; }
+
+function template(t) {
+    var r = /{\w+}/g;
+    var match, prev = 0, parts = [], keys = [];
+    while ((match = r.exec(t)) != null) {
+        parts.push(t.substring(prev, match.index));
+        parts.push(null);
+        keys.push(t.substring(match.index+1, r.lastIndex-1));
+        prev = r.lastIndex;
+    }
+    parts.push(t.substring(prev));
+
+    return function(vals) {
+        for (var i in keys) {
+            var k = keys[i];
+            var v = vals[k];
+            if (v === undefined) dprint("Error: Missing template key: " + k);
+            if (!k.endsWith("html")) v = htmlEscape(v);
+            parts[i*2 + 1] = v;
+        }
+        return parts.join('');
+    };
+}      
 
 function make_short_link(url) {
     var max_len = 30
@@ -256,6 +286,8 @@ function use_link(m) {
     return true;
 }
 
+var thumb_template = template('<a href="{link}"><img src="{url}" width="{width}" height="{height}"/></a>');
+
 function media_html(m) {
     if (!m.media || !m.media.length) return '';
     var imgs = '';
@@ -269,9 +301,8 @@ function media_html(m) {
             if (t.width > 525 || t.height > 175) continue;
             tw += t.width;
             if (tw > 500) break;
-            var img = '<img src="' + htmlEscape(t.url) + '" width="' + t.width + '" height="' + t.height + '"/>';
-            if (media.link) img = '<a href="' + htmlEscape(media.link) + '">' + img + '</a>';
-            imgs += img;
+            t.link = media.link || m.link;
+            imgs += thumb_template(t);
             break;
         }
     }
@@ -293,60 +324,69 @@ function time_html(date) {
     return Math.round(delta) + " days ago";
 }
 
+var msg_template = template(
+    '<div class="message" eurl="{eurl}"><table><tr><td>' +
+    '<img class="userpic" src="http://friendfeed.com/{pic_path}/picture?size={pic_size}"/></td>' +
+    '<td class="content"><a href="{profile_url}"><img class="icon" src="{icon_url}"/></a>' +
+    '{user_html} {body_html} <span class="date">{time}</span> {comlike_html} {media_html}' +
+    '</td></tr></table></div>');
+
+
+var userlink_template = template('<a target="_self" href="#{nickname}" class="nickname">{nickname}</a>');
+var roomlink_template = template('<a href="http://friendfeed.com/rooms/{nickname}" class="nickname">{name}</a>');
+var comments_template = template('<img src="http://friendfeed.com/static/images/comment-lighter.png"/> <a href="{eurl}">{desc}</a> ');
+var likes_template = template('<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> <a href="{eurl}">{desc}</a> ');
+
 function msg_html(m, is_main) {
-    var html = [];
+    var args = {
+        eurl: entry_url(m),
+        pic_path: '',
+        pic_size: is_main ? "medium" : "small",
+        profile_url: '',
+        icon_url: '',
+        user_html: userlink_template(m.user),
+        body_html: '',
+        time: time_html(m.date),
+        comlike_html: '',
+        media_html: media_html(m)
+    }
 
-    var icon = m.type == 'e' ? 
-        ('<a href="' + m.service.profileUrl + '"><img class="icon" src="' + m.service.iconUrl + '"/></a>') : 
-        ('<img class="icon" src="http://friendfeed.com/static/images/comment-' + (m.user.is_friend ? 'friend' : 'lighter') + '.png?v=2"/>');
-
-    html.push('<div class="message" eurl="' + entry_url(m) + '"><table><tr><td>')
     if (m.room) {
-        html.push(
-            '<img class="userpic" src="http://friendfeed.com/rooms/' + m.room.nickname + 
-                '/picture?size=' + (is_main ? "medium" : "small") + '"/></td>' +
-            '<td class="content">' + icon +
-            '<a href="http://friendfeed.com/rooms/' + m.room.nickname + '" class="nickname">' + htmlEscape(m.room.name) + '</a> ');
-
-        if (!m.anonymous) {
-            html.push(': <a target="_self" href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
-        }
+        args.pic_path = 'rooms/' + m.room.nickname;
+        args.user_html = roomlink_template(m.room) + (m.anonymous ? '' : ': ' + args.user_html);
     } else {
-        html.push(
-            '<img class="userpic" src="http://friendfeed.com/users/' + m.user.nickname + 
-                '/picture?size=' + (is_main ? "medium" : "small") + '"/></td>' +
-            '<td class="content">' + icon +
-            '<a target="_self" href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
+        args.pic_path = 'users/' + m.user.nickname;
     }
 
-    if (m.type == "c") html.push(linkify(m.body));
-    else if (m.type == "l") html.push("Liked " + htmlEscape(m.entry.title));
-    else {
+    if (m.type == 'c') {
+        args.icon_url = 'http://friendfeed.com/static/images/comment-' + (m.user.is_friend ? 'friend' : 'lighter') + '.png?v=2';
+        args.profile_url = 'http://friendfeed.com/' + m.user.nickname + '/comments';
+        args.body_html = linkify(m.body);
+    } else {
+        args.icon_url = m.service.iconUrl;
+        args.profile_url = m.service.profileUrl;
         if (use_link(m)) {
-            if (m.attached_comment) html.push(linkify(m.attached_comment.body) + " - ");
-            html.push(linkify(m.title) + ' ' + make_short_link(m.link));
+            if (m.attached_comment) args.body_html = linkify(m.attached_comment.body) + " - ";
+            args.body_html += linkify(m.title) + ' ' + make_short_link(htmlEscape(m.link));
         } else {
-            html.push(linkify(m.title));
-            if (m.attached_comment) html.push(' ' + linkify(m.attached_comment.body));
+            args.body_html = linkify(m.title);
+            if (m.attached_comment) args.body_html += ' ' + linkify(m.attached_comment.body);
+        }
+
+        if (m.comments.length || m.likes.length) {
+            args.comlike_html = 
+                '<span class="comlike">' + 
+                (m.comments.length == 0 ? '' : 
+                    comments_template({eurl:args.eurl, desc: m.comments.length + (m.comments.length == 1 ? ' comment' : ' comments')})) +
+                (m.likes.length == 0 ? '' : 
+                    likes_template({eurl:args.eurl, desc: m.likes.length + (m.likes.length == 1 ? ' like' : ' likes')})) +
+                '</span>';
         }
     }
 
-    html.push(' <span class="date">' + time_html(m.date) + '</span></div>');
-    if (m.type == 'e' && (m.comments.length || m.likes.length)) {
-        html.push(' <span class="comlike">');
-        if (m.comments.length)
-            html.push('<img src="http://friendfeed.com/static/images/comment-lighter.png"/> <a href="' +
-                entry_url(m) + '">' + m.comments.length + (m.comments.length == 1 ? ' comment' : ' comments') + '</a> ');
-        if (m.likes.length)
-            html.push('<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> <a href="' +
-                entry_url(m) + '">' + m.likes.length + (m.likes.length == 1 ? ' like' : ' likes') + ' </a> ');
-        html.push('</span>');
-    }
-    html.push(media_html(m));
- 
-    html.push('</td></tr></table></div>')
-    return html.join('');
+    return msg_template(args);
 }
+
 
 function show_feed(cur_user) {
     var profile_data = cur_user.profile_data;
@@ -367,13 +407,13 @@ function show_feed(cur_user) {
         dlist.push(m);
     }
 
-    var html = [];
+    var profile_template = template(
+        '<div class="profile"><table><tr><td style="line-height:0px">' +
+        '<img class="userpic" src="http://friendfeed.com/{nickname}/picture?size=large"/></td><td style="width:100%">' + 
+        '{nickname} ({name}) + friends<br/><a href="http://friendfeed.com/{nickname}">View {nickname} on FriendFeed</a></td></tr></table></div>');
 
-    html.push('<div class="profile"><table><tr><td style="line-height:0px"><img class="userpic" src="http://friendfeed.com/' +
-         profile_data.nickname + 
-        '/picture?size=large"/></td><td style="width:100%">' + profile_data.nickname + ' (' + htmlEscape(profile_data.name) + 
-        ') + friends  <br/><a href="http://friendfeed.com/' + 
-        profile_data.nickname + '">View ' + profile_data.nickname + ' on FriendFeed</a></td></tr></table></div>');
+    var html = [];
+    html.push(profile_template(profile_data));
 
     for (var i in dmsgs) {
         var dlist = dmsgs[i];
@@ -391,19 +431,21 @@ function show_feed(cur_user) {
 
     $("#main").html(html.join(''))
 
+    var menu_template = template(
+        '<div style="display:none" id="msgmenu"><a href="{eurl}">View on FriendFeed</a><br/>' +
+        '<img src="http://friendfeed.com/static/images/comment-lighter.png"/> <a href="{comurl}">Comment</a><br/>' +
+        '<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> <a href="{eurl}">Like</a> ' +
+        '</div>');
+
+    var menu_timeout;
     $(".message").mouseover(function (e) {
         if ($(this).find("#msgmenu").length) return;
         $('#msgmenu').remove();
+        clearTimeout(menu_timeout);
         var eurl = $(this).attr("eurl");
-        var comurl = eurl + '/comment?comment=' + eurl.split('/')[4];
-        $(this).append('<div id="msgmenu">' +
-            '<a href="' + eurl + '">View on FriendFeed</a><br/>' +
-            '<img src="http://friendfeed.com/static/images/comment-lighter.png"/> ' +
-            '<a href="' + comurl + '">Comment</a><br/>' +
-            '<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> ' +
-            '<a href="' + eurl + '">Like</a> ' +
-            '</div>');
+        $(this).append(menu_template({eurl:eurl, comurl: eurl + '/comment?comment=' + eurl.split('/')[4]}));
         $('#msgmenu').css('left', this.offsetWidth-2);
+        menu_timeout = setTimeout(function() { $('#msgmenu').fadeIn(400)}, 300);
     });
     $('body').mouseover(function (e) {
         if (!$(e.target).parents().andSelf().is(".message"))
