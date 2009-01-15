@@ -394,7 +394,6 @@ function show_feed(cur_user) {
     var profile_data = cur_user.profile_data;
     var msgs = make_messages(profile_data.nickname, cur_user.feed_data.entries, cur_user.profile_data.subscriptions);
     sort_messages(msgs);
-    msgs = msgs.slice(0, 70)
 
     var dmsgs = []
     var dmap = {}
@@ -407,6 +406,7 @@ function show_feed(cur_user) {
             dmsgs.push(dlist);
         }
         dlist.push(m);
+        if (dmsgs.length >= cur_user.feed_data.entries.length && i > 2*cur_user.feed_data.entries.length) break;
     }
 
     var profile_template = template(
