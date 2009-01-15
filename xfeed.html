@@ -334,7 +334,7 @@ var msg_template = template(
     '</td></tr></table></div>');
 
 
-var userlink_template = template('<a target="_self" href="#{nickname}" class="nickname">{nickname}</a>');
+var userlink_template = template('<a target="_self" title="{name}" href="#{nickname}" class="nickname">{nickname}</a>');
 var roomlink_template = template('<a href="http://friendfeed.com/rooms/{nickname}" class="nickname">{name}</a>');
 var comments_template = template('<img src="http://friendfeed.com/static/images/comment-lighter.png"/> <a href="{eurl}">{desc}</a> ');
 var likes_template = template('<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> <a href="{eurl}">{desc}</a> ');
