@@ -2,6 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/> 
+    <base target="_blank">
     <title>Feed</title>
     <style type="text/css">
         html, body {
@@ -92,8 +93,18 @@
             width: 100%;
             font-size:12pt;
         }
+
+        .message .comlike a {
+            color: #aaa;
+        }
+        .message .comlike img {
+            margin-left:0.4em;
+        }
         .message .comlike {
-            margin-top: 0.5em;
+            white-space: nowrap;
+            font-size:9pt;
+            font-style: italic;
+            white-space: nowrap;
         }
         .message .icon {
             float:right;
@@ -235,6 +246,7 @@ function use_link(m) {
     var s = m.service.id;
     if (s == "twitter") return false;
     if (s == "internal" && m.service.entryType == "message") return false;
+    if (s == "facebook" && m.service.entryType == "status") return false;
     return true;
 }
 
@@ -290,7 +302,7 @@ function msg_html(m, is_main) {
             '<a href="http://friendfeed.com/rooms/' + m.room.nickname + '" class="nickname">' + htmlEscape(m.room.name) + '</a> ');
 
         if (!m.anonymous) {
-            html.push(': <a href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
+            html.push(': <a target="_self" href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
         }
     } else {
         html.push(
@@ -298,7 +310,7 @@ function msg_html(m, is_main) {
                 '/picture?size=' + (is_main ? "medium" : "small") + '"/></td>' +
             '<td class="content">' +
             '<img class="icon" src="' + iconurl + '"/> ' +
-            '<a href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
+            '<a target="_self" href="#' + m.user.nickname + '" class="nickname">' + m.user.nickname + '</a> ');
     }
 
     if (m.type == "c") html.push(linkify(m.body));
@@ -314,17 +326,17 @@ function msg_html(m, is_main) {
     }
 
     html.push(' <span class="date">' + time_html(m.date) + '</span></div>');
-    html.push(media_html(m));
     if (m.type == 'e' && (m.comments.length || m.likes.length)) {
-        html.push('<div class="comlike">');
+        html.push(' <span class="comlike">');
         if (m.comments.length)
             html.push('<img src="http://friendfeed.com/static/images/comment-lighter.png"/> <a href="' +
                 entry_url(m) + '">' + m.comments.length + (m.comments.length == 1 ? ' comment' : ' comments') + '</a> ');
         if (m.likes.length)
             html.push('<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> <a href="' +
                 entry_url(m) + '">' + m.likes.length + (m.likes.length == 1 ? ' like' : ' likes') + ' </a> ');
-        html.push('</div>');
+        html.push('</span>');
     }
+    html.push(media_html(m));
  
     html.push('</td></tr></table></div>')
     return html.join('');
