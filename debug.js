@@ -18,6 +18,10 @@ document.write(
   var htmlCharMap = {'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'};
   function htmlCharEsc(c) { return htmlCharMap[c]; }  // don't create a closure, and don't keep recreating htmlCharMap
   function htmlEscape(s) { return String(s).replace(/[&<>\"]/g, htmlCharEsc); }
+  if (!String.prototype.endsWith)
+    String.prototype.endsWith = function(s) { return this.indexOf(s, this.length - s.length) != -1; }
+  if (!String.prototype.startsWith)
+    String.prototype.startsWith = function(s) { return this.lastIndexOf(s, 0) != -1; }
 
   function hideDebugWin() {
     $('#dbgwin').css('display', 'none').find(".dbgcommand").blur();
@@ -129,7 +133,7 @@ document.write(
     },
 
     go: function () {
-      this.c = this.cmdbox.val();
+      this.c = $.trim(this.cmdbox.val());
 
       this.h_pos = this.hist.length-1;
       this.hist[this.h_pos] = this.c;
@@ -137,7 +141,12 @@ document.write(
 
       this.cmdbox.val('');
       try {
-        this.printHTML('<pre>&gt; ' + htmlEscape(this.c + '\n' + eval('$_=(' + this.c + ')')) + '</pre>');
+        if (this.c.endsWith(";")) {
+            var r = eval('$_=((function () { ' + this.c + ' })())');
+        } else {
+            var r = eval('$_=(' + this.c + ')');
+        }
+        this.printHTML('<pre>&gt; ' + htmlEscape(this.c + '\n' + r) + '</pre>');
       } catch(e) {
         this.printHTML('<pre>Error: ' + e + '</pre>');
       }
