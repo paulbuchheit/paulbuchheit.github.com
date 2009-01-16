@@ -185,11 +185,16 @@ function template(t) {
     parts.push(t.substring(prev));
 
     return function(vals) {
+        var escaped = {}
         for (var i in keys) {
             var k = keys[i];
-            var v = vals[k];
-            if (v === undefined) dprint("Error: Missing template key: " + k);
-            if (!k.endsWith("html")) v = htmlEscape(v);
+            var v = escaped[k];
+            if (v === undefined) {
+                v = vals[k];
+                if (v === undefined) dprint("Error: Missing template key: " + k);
+                if (!k.endsWith("html")) v = htmlEscape(v);
+                escaped[k] = v;
+            }
             parts[i*2 + 1] = v;
         }
         return parts.join('');
