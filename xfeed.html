@@ -74,15 +74,22 @@
             padding:9px 5px 9px 5px;
             background: white;
             width: 40em;
-            border-bottom: 1px solid #e0e0e0;
+            border-top: 1px solid #e0e0e0;
         }
         .message .userpic {
             border: 1px solid #eee;
             margin-right: 10px;
-            margin-top:4px;
+            margin-top:2px;
             width: 50px;
             height: 50px;
         }
+        .message .smile img {
+            padding-left:1px;
+            padding-right:1px;
+            margin-right: 3px;
+            margin-bottom: -2px;
+        }
+
         .message .nickname {
             font-weight: bold;
         }
@@ -135,6 +142,12 @@
             margin-left: -4px;
             width: 25px;
             height: 25px;
+        }
+
+        .submsgs .message .smile img {
+            padding-left:2px;
+            padding-right:5px;
+            margin-right: 10px;
         }
 
         #msgmenu {
@@ -271,7 +284,7 @@ function make_messages(who, entries, subs) {
     var good = []
     for (var i in r) {
         var m = r[i];
-        if (m.type == 'l' || !m.user.nickname) continue;  // not for now
+        if (!m.user.nickname) continue;
         if (m.active || m.room || m.user.is_friend) good.push(m);
     }
     return good;
@@ -279,8 +292,7 @@ function make_messages(who, entries, subs) {
 
 function sort_messages(msgs) {
     function cmp(a, b) {
-        // put entries after comments of the same time
-        return (a.date > b.date) ? -1 : (a.date < b.date) ? 1 : (a.type.charCodeAt(0) - b.type.charCodeAt(0));
+        return (a.date > b.date) ? -1 : (a.date < b.date) ? 1 : 0;
     }
     msgs.sort(cmp);
 }
@@ -339,6 +351,11 @@ var msg_template = template(
     '{user_html} {body_html} <span class="date">{time}</span> {comlike_html} {media_html}' +
     '</td></tr></table></div>');
 
+var likemsg_template = template(
+    '<div class="message" eurl="{eurl}"><table><tr><td class="smile">' +
+    '<img src="http://friendfeed.com/static/images/smile.png"/></td>' +
+    '<td>{who_html} Liked "<i>{title_html}</i>"' +
+    '</td></tr></table></div>');
 
 var userlink_template = template('<a target="_self" title="{name}" href="#{nickname}" class="nickname">{nickname}</a>');
 var roomlink_template = template('<a href="http://friendfeed.com/rooms/{nickname}" class="nickname">{name}</a>');
@@ -346,6 +363,19 @@ var comments_template = template('<img src="http://friendfeed.com/static/images/
 var likes_template = template('<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> <a href="{eurl}">{desc}</a> ');
 
 function msg_html(m, is_main) {
+    if (m.type == 'l') {
+        var names = [];
+        for (var i in m.morelikes) {
+            if (i > 0) names.push(i == m.morelikes.length-1 ? " and " : ", ");
+            names.push(userlink_template(m.morelikes[i].user));
+        }
+        return likemsg_template({
+            eurl: entry_url(m),
+            who_html: names.join(''),
+            title_html: linkify(m.entry.title) + (use_link(m.entry) ? ' ' + make_short_link(htmlEscape(m.entry.link)) : '')
+        });
+    }
+
     var args = {
         eurl: entry_url(m),
         pic_path: '',
@@ -401,15 +431,39 @@ function show_feed(cur_user) {
     var msgs = make_messages(profile_data.nickname, cur_user.feed_data.entries, cur_user.profile_data.subscriptions);
     sort_messages(msgs);
 
-    var dmsgs = []
-    var dmap = {}
+    var dmsgs = [];
+    var dmap = {};
+    var likemap = {};
     for (var i in msgs) {
         var m = msgs[i];
         var dlist = dmap[m.entry.id];
+        if (m.type == 'l') {
+            var first = likemap[m.entry.id];
+            if (!first) {
+                likemap[m.entry.id] = m;
+                m.morelikes = [m];
+                if (dlist) {
+                    // if there's already a cluster of normal messages, add the like to that group
+                    dlist.push(m);
+                } else {
+                    // otherwise, make it a separate group of it's own
+                    dmsgs.push([m]);
+                }
+            } else {
+                first.morelikes.push(m);
+            }
+            continue;
+        }
+
         if (!dlist) {
-            dlist = [];
+            if (dmsgs.length && dmsgs[dmsgs.length-1][0].entry.id == m.entry.id) {
+                // the previous was a like-only cluster, promote to regular cluster
+                dlist = dmsgs[dmsgs.length-1];
+            } else {
+                dlist = [];
+                dmsgs.push(dlist);
+            }
             dmap[m.entry.id] = dlist;
-            dmsgs.push(dlist);
         }
         dlist.push(m);
         if (dmsgs.length >= cur_user.feed_data.entries.length && i > 2*cur_user.feed_data.entries.length) break;
@@ -438,6 +492,7 @@ function show_feed(cur_user) {
     }
 
     $("#main").html(html.join(''))
+    $(".message:first").css("border-top-width", "0px");
 
     var menu_template = template(
         '<div style="display:none" id="msgmenu"><a href="{eurl}">View on FriendFeed</a><br/>' +
