@@ -240,10 +240,13 @@ function parse_date(d) {
 }
     
 
-function make_messages(who, entries, subs) {
+// Since this ui is more "message oriented", we first need to translate the FriendFeed
+// entries into a list of individual messages, where each entry, comment, or like is
+// a separate message.
+function make_messages(who, entries, subscriptions) {
     var submap = {}
-    for (var i in subs) {
-        var s = subs[i];
+    for (var i in subscriptions) {
+        var s = subscriptions[i];
         submap[s.id] = s;
     }
 
@@ -256,6 +259,8 @@ function make_messages(who, entries, subs) {
         e.entry = e;
         r.push(e)
 
+        // If the first comment is from the same person as the entry,
+        // make it part of the entry instead of a being a separate message.
         if (e.comments.length && e.comments[0].user.id == e.user.id) {
             e.attached_comment = e.comments[0];
             e.comments = e.comments.slice(1);
@@ -285,6 +290,8 @@ function make_messages(who, entries, subs) {
     for (var i in r) {
         var m = r[i];
         if (!m.user.nickname) continue;
+        // Only include messages from friends unless they are in a room
+        // or 'who' posted this entry
         if (m.active || m.room || m.user.is_friend) good.push(m);
     }
     return good;
@@ -363,6 +370,7 @@ var comments_template = template('<img src="http://friendfeed.com/static/images/
 var likes_template = template('<img src="http://friendfeed.com/static/images/smile.png" style="margin-bottom:-2px"/> <a href="{eurl}">{desc}</a> ');
 
 function msg_html(m, is_main) {
+    // Likes are extra-special since we generate a single entry for all the likes on an entry
     if (m.type == 'l') {
         var names = [];
         for (var i in m.morelikes) {
@@ -428,16 +436,21 @@ function msg_html(m, is_main) {
 
 function show_feed(cur_user) {
     var profile_data = cur_user.profile_data;
-    var msgs = make_messages(profile_data.nickname, cur_user.feed_data.entries, cur_user.profile_data.subscriptions);
+    var msgs = make_messages(profile_data.nickname, cur_user.feed_data.entries, profile_data.subscriptions);
     sort_messages(msgs);
 
-    var dmsgs = [];
+    // Even though this is message-oriented, we still want to group all recent messages belonging to the
+    // same entry, ordered by the newest message. Likes are somewhat exceptional though, since they
+    // never cause other messages to be "promoted" in the ordering.
+    var dmsgs = [];  // list of result clusters
     var dmap = {};
     var likemap = {};
     for (var i in msgs) {
         var m = msgs[i];
         var dlist = dmap[m.entry.id];
+
         if (m.type == 'l') {
+            // gather all of the likes in a single list attached to the first like.
             var first = likemap[m.entry.id];
             if (!first) {
                 likemap[m.entry.id] = m;
@@ -479,14 +492,15 @@ function show_feed(cur_user) {
 
     for (var i in dmsgs) {
         var dlist = dmsgs[i];
+        var last = dlist[dlist.length-1];
+        if (last.type != 'e' && (last.type != 'l' || dlist.length > 1))  // always include the entry, unless it's a like-only cluster
+            dlist.push(last.entry);
+
         html.push(msg_html(dlist[0], true));
         if (dlist.length < 2) continue;
         html.push('<div class="submsgs">');
         for (var x = 1; x < dlist.length; x++)
             html.push(msg_html(dlist[x]));
-        var last = dlist[dlist.length-1];
-        if (last.type != 'e')
-            html.push(msg_html(last.entry))
 
         html.push('</div>');
     }
