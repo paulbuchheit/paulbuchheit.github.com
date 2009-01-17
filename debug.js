@@ -1,3 +1,6 @@
+// Copyright 2009 Paul Buchheit
+// Licensed under the Apache License, Version 2.0
+
 // To activate the debug window, press the 'D' key (Shift-d)
 // Press 'escape' to hide
 // Assumes jQuery has already been included.
