@@ -556,6 +556,27 @@ function show_feed(cur_user) {
     });
 }
 
+var auto_refresher = {
+    start: function() {
+        this.last_active = this.last_refresh = new Date();
+        setInterval(function() { auto_refresher.maybe_refresh() }, 1000);
+        $(document).mousemove(this.activity).keypress(this.activity).scroll(this.activity);
+    },
+
+    activity: function() { auto_refresher.last_active = new Date(); },
+    was_recently_active: function() { return (new Date()) - this.last_active < 20000; },
+
+    maybe_refresh: function() {
+        var now = new Date();
+        if (now - this.last_refresh < 60000 || this.was_recently_active()) return;
+        this.last_refresh = now;
+        if (this.cur_user) {
+            dprint('auto');
+            this.cur_user.fetch_feed(true);
+        }
+    }
+};
+
 function load_user(nickname) {
     $("#main").html("Loading...");
     var cur_user = {nickname: nickname};
@@ -567,10 +588,24 @@ function load_user(nickname) {
         cur_user.profile_data = data;
         check_loaded();
     });
-    $.getJSON("http://friendfeed.com/api/feed/user/" + nickname + "/friends?callback=?", function(data) {
-        cur_user.feed_data = data;
-        check_loaded();
-    });
+
+    cur_user.fetch_feed = function(is_auto) {
+        $.getJSON("http://friendfeed.com/api/feed/user/" + nickname + "/friends?callback=?", function(data) {
+            if (cur_user !== auto_refresher.cur_user) {
+                dprint("user changed");
+                return;
+            }
+            if (is_auto && auto_refresher.was_recently_active()) {
+                dprint("was active");
+                return;
+            }
+            cur_user.feed_data = data;
+            check_loaded();
+        });
+    }
+
+    auto_refresher.cur_user = cur_user;
+    cur_user.fetch_feed();
 }
         
     
@@ -582,6 +617,7 @@ $(function() {
         cur_nick = nick;
         load_user(nick);
     }, 200);
+    auto_refresher.start();
 });
 
   //]]>
