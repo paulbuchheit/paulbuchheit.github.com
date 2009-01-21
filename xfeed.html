@@ -142,6 +142,8 @@
         }
         .message .media {
             margin-top: 8px;
+            white-space:nowrap;
+            overflow:hidden;
         }
         .message .media img {
           border: 1px solid #ccc;
@@ -353,7 +355,7 @@ function media_html(m) {
             if (!t.width || !t.height) continue;
             if (t.width > 525 || t.height > 175) continue;
             tw += t.width;
-            if (tw > 500) break;
+            if (tw > 525) break;
             t.link = media.link || m.link;
             imgs += thumb_template(t);
             break;
