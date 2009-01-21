@@ -511,7 +511,8 @@ function show_feed(cur_user) {
     var profile_template = template(
         '<div class="profile"><table><tr><td style="line-height:0px">' +
         '<img class="userpic" src="http://friendfeed.com/{nickname}/picture?size=large"/></td><td style="width:100%">' + 
-        '{nickname} ({name}) + friends<br/><a href="http://friendfeed.com/{nickname}">View {nickname} on FriendFeed</a></td></tr></table></div>');
+        '{nickname} ({name}) + friends <div style="font-size:11pt"><a id="refresh" href="#">Refresh</a> - ' +
+        '<a href="http://friendfeed.com/{nickname}">View {nickname} on FriendFeed</a></div></td></tr></table></div>');
 
     var html = [];
     html.push(profile_template(profile_data));
@@ -533,6 +534,12 @@ function show_feed(cur_user) {
 
     $("#main").html(html.join(''))
     $(".message:first").css("border-top-width", "0px");
+
+    $("#refresh").click(function () {
+        auto_refresher.cur_user.fetch_feed();
+        $("#refresh").replaceWith("Loading...");
+        return false;
+    });
 
     var menu_template = template(
         '<div style="display:none" id="msgmenu"><a href="{eurl}">View on FriendFeed</a><br/>' +
