@@ -1,19 +1,27 @@
 body {
     background: white;
-    background-image: url("http://i.friendfeed.com/p-f451e6106d71460f8d322c4e6b4d2992-large-8");
     color: #000066;
 }
 
-body input, textarea, button, td {
+body, input, textarea, button, td {
   font-family: "lucida grande", tahoma, verdana, arial, sans-serif;
   font-size: 12px;
 }
+
+.entry .info,
+.entry .likes,
+.entry .comments,
+.entry .info a.date,
+.entry .info a.service,
+.entry .comments a.via,
+.entry .commentform textarea {
+  font-size: 11px;
+  line-height: 15px;
+}
+
 
 #embedheader,
 #embedbody .sharebox {
     display: none;
 }
 
-.entry {
-    background: white;
-}
