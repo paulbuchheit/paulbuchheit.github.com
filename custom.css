@@ -1,6 +1,12 @@
 body {
     background: white;
-    color: #000088;
+    background-image: url("http://i.friendfeed.com/p-f451e6106d71460f8d322c4e6b4d2992-large-8");
+    color: #000066;
+}
+
+body input, textarea, button, td {
+  font-family: "lucida grande", tahoma, verdana, arial, sans-serif;
+  font-size: 12px;
 }
 
 #embedheader,
