@@ -6,6 +6,7 @@ body {
 body, input, textarea, button, td {
   font-family: "lucida grande", tahoma, verdana, arial, sans-serif;
   font-size: 12px;
+  line-height: auto !important;
 }
 
 .entry .info,
@@ -16,9 +17,11 @@ body, input, textarea, button, td {
 .entry .comments a.via,
 .entry .commentform textarea {
   font-size: 11px;
-  line-height: 15px;
 }
 
+#embedbody {
+  max-width: 15em;
+}
 
 #embedheader,
 #embedbody .sharebox {
