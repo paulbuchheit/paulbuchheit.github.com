@@ -1,5 +1,10 @@
 body {
-    background: black;
-    color: blue;
+    background: white;
+    color: #000088;
+}
+
+#embedheader,
+#embedbody .sharebox {
+    display: none;
 }
 
