@@ -8,11 +8,11 @@ body {
 
 body, input, textarea, button, td {
   font-family: "lucida grande", tahoma, verdana, arial, sans-serif;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .entry {
-  line-height: 14px;
+  line-height: normal;
 }
 
 .entry .info,
@@ -22,8 +22,8 @@ body, input, textarea, button, td {
 .entry .info a.service,
 .entry .comments a.via,
 .entry .commentform textarea {
-  font-size: 10px;
-  line-height: 12px;
+  font-size: 9px;
+  line-height: normal;
 }
 
 a {
