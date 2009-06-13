@@ -18,7 +18,8 @@ body {
   font-size: 10.14px;
   line-height: normal;
 }
-.entry .comments {
+.entry .info {
+  line-height: 16px;
 }
 
 a {
