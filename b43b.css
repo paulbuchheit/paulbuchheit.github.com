@@ -15,7 +15,7 @@ body {
 .entry .info a.service,
 .entry .comments a.via,
 .entry .commentform textarea {
-  font-size: 10px;
+  font-size: 11px;
 }
 
 a {
