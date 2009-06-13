@@ -17,6 +17,9 @@ body {
 .entry .commentform textarea {
   font-size: 10.14px;
 }
+.entry .comments {
+  line-height: normal;
+}
 
 a {
 	color:#339999;	
