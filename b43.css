@@ -12,7 +12,7 @@ body, input, textarea, button, td {
 }
 
 .entry {
-  line-height: 16px;
+  line-height: 14px;
 }
 
 .entry .info,
@@ -22,8 +22,8 @@ body, input, textarea, button, td {
 .entry .info a.service,
 .entry .comments a.via,
 .entry .commentform textarea {
-  font-size: 11px;
-  line-height: 15px;
+  font-size: 10px;
+  line-height: 12px;
 }
 
 a {
