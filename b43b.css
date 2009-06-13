@@ -16,9 +16,9 @@ body {
 .entry .comments a.via,
 .entry .commentform textarea {
   font-size: 10.14px;
+  line-height: normal;
 }
 .entry .comments {
-  line-height: normal;
 }
 
 a {
