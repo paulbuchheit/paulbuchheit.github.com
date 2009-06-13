@@ -1,0 +1,52 @@
+body {
+	background-color: transparent !important;
+	background-image:none !important;
+}
+#embedheader {
+	display:none !important;
+}
+
+body, input, textarea, button, td {
+  font-family: "lucida grande", tahoma, verdana, arial, sans-serif;
+  font-size: 12px;
+}
+
+.entry {
+  line-height: 16px;
+}
+
+.entry .info,
+.entry .likes,
+.entry .comments,
+.entry .info a.date,
+.entry .info a.service,
+.entry .comments a.via,
+.entry .commentform textarea {
+  font-size: 11px;
+  line-height: 15px;
+}
+
+a {
+	color:#339999;	
+}
+
+.entry .title .name a,
+.entry .info a.date,
+.entry .info a.service,
+.entry .comments a.via {
+	color:#65afae;
+	text-decoration:none;
+}
+
+.entry .likes div {
+	background:url('http://www.building43.com/wp-content/themes/b43-thematic/img/icons/heart.png') no-repeat !important;
+}
+
+
+.entry .info a, .entry .likes a, .entry .comment a, .entry .expandcomment a {
+	color: #65AFAE !important;
+}
+
+.l_attachphotos a {
+	color: #65AFAE !important;	
+}
